@@ -1,5 +1,6 @@
 import logging
 import re
+from datetime import timedelta
 from homeassistant.components.climate import *
 
 from .core.aiot_manager import (
@@ -117,11 +118,59 @@ S3_FAN_ATTR_RES_MAPPING = {
     FAN_AUTO: "3",
 }
 
+W400_MODE_RES_ATTR_MAPPING = {
+    "0": HVACMode.AUTO,
+    "1": HVACMode.COOL,
+    "2": HVACMode.DRY,
+    "3": HVACMode.FAN_ONLY,
+    "4": HVACMode.HEAT,
+    "5": HVACMode.HEAT,
+    "6": HVACMode.HEAT,
+}
+
+W400_MODE_ATTR_RES_MAPPING = {
+    HVACMode.AUTO: "0",
+    HVACMode.COOL: "1",
+    HVACMode.DRY: "2",
+    HVACMode.FAN_ONLY: "3",
+    HVACMode.HEAT: "4",
+}
+
+W400_FAN_RES_ATTR_MAPPING = {
+    "0": FAN_AUTO,
+    "1": FAN_LOW,
+    "2": FAN_MEDIUM,
+    "3": FAN_HIGH,
+    "4": "gentle",
+    "5": "ultra_low",
+    "6": "ultra_high",
+    "7": "medium_low",
+    "8": "medium_high",
+    "9": "stop",
+}
+
+W400_FAN_ATTR_RES_MAPPING = {
+    FAN_AUTO: "0",
+    FAN_LOW: "1",
+    FAN_MEDIUM: "2",
+    FAN_HIGH: "3",
+    "gentle": "4",
+    "ultra_low": "5",
+    "ultra_high": "6",
+    "medium_low": "7",
+    "medium_high": "8",
+    "stop": "9",
+}
+
+W400_POLL_INTERVAL = timedelta(seconds=60)
+
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     manager: AiotManager = hass.data[DOMAIN][HASS_DATA_AIOT_MANAGER]
     cls_entities = {
         "airrtc_agl001": AiotAirrtcAgl001Entity,
+        "airrtc_acn002": AiotAirrtcAcn002Entity,
+        "airrtc_acn002_hydro": AiotAirrtcAcn002HydroEntity,
         "airrtc_pcacn2": AiotAirrtcPcacn2Entity,
         "airrtc_acn02": AiotAirrtcAcn02Entity,
         "ac_partner_p3": AiotACPartnerP3Entity,
@@ -306,6 +355,319 @@ class AiotAirrtcAcn02Entity(AiotEntityBase, ClimateEntity):
         self._attr_fan_mode = fan_mode
         self.schedule_update_ha_state()
 
+
+class AiotAirrtcAcn002Entity(AiotEntityBase, ClimateEntity):
+    SCAN_INTERVAL = W400_POLL_INTERVAL
+
+    def __init__(self, hass, device, res_params, channel=None, **kwargs):
+        AiotEntityBase.__init__(self, hass, device, res_params, TYPE, channel, **kwargs)
+        self._attr_temperature_unit = kwargs.get("temperature_unit")
+        self._attr_hvac_modes = kwargs.get("hvac_modes")
+        self._attr_fan_modes = kwargs.get("fan_modes")
+        self._attr_target_temperature_step = kwargs.get("target_temperature_step")
+        self._attr_max_temp = kwargs.get("max_temp")
+        self._attr_min_temp = kwargs.get("min_temp")
+        self._attr_target_temperature_high = kwargs.get("max_temp")
+        self._attr_target_temperature_low = kwargs.get("min_temp")
+
+        self._attr_last_hvac_mode = HVACMode.AUTO
+        self._attr_fan_mode = FAN_AUTO
+        self._attr_current_temperature = None
+        self._attr_current_humidity = None
+        self._heat_target_temperature = None
+        self._cool_target_temperature = None
+        self._ambient_temperature = None
+        self._ambient_humidity = None
+
+        self._extra_state_attributes.extend(
+            [
+                "ambient_temperature",
+                "ambient_humidity",
+                "heat_target_temperature",
+                "cool_target_temperature",
+            ]
+        )
+
+        self._power_state = None
+        self._mode_state = None
+        self._fan_state = None
+        self._current_temp_raw = None
+        self._local_temp_raw = None
+        self._humidity_raw = None
+        self._target_heat_raw = None
+        self._target_cool_raw = None
+        self._attr_should_poll = True
+
+    @property
+    def ambient_temperature(self):
+        return self._ambient_temperature
+
+    @property
+    def ambient_humidity(self):
+        return self._ambient_humidity
+
+    @property
+    def heat_target_temperature(self):
+        return self._heat_target_temperature
+
+    @property
+    def cool_target_temperature(self):
+        return self._cool_target_temperature
+
+    def _update_target_temperature(self):
+        if self._attr_hvac_mode == HVACMode.HEAT:
+            if self._heat_target_temperature is not None:
+                self._attr_target_temperature = self._heat_target_temperature
+        else:
+            if self._cool_target_temperature is not None:
+                self._attr_target_temperature = self._cool_target_temperature
+
+    def convert_res_to_attr(self, res_name, res_value):
+        if res_name == "power":
+            if res_value == "0":
+                self._attr_hvac_mode = HVACMode.OFF
+            elif res_value == "1" and self._attr_last_hvac_mode:
+                self._attr_hvac_mode = self._attr_last_hvac_mode
+                self._update_target_temperature()
+            self.schedule_update_ha_state()
+            return res_value
+
+        if res_name == "mode":
+            hvac_mode = W400_MODE_RES_ATTR_MAPPING.get(res_value)
+            if hvac_mode:
+                self._attr_hvac_mode = hvac_mode
+                if hvac_mode != HVACMode.OFF:
+                    self._attr_last_hvac_mode = hvac_mode
+                self._update_target_temperature()
+                self.schedule_update_ha_state()
+            return res_value
+
+        if res_name == "fan_mode":
+            fan_mode = W400_FAN_RES_ATTR_MAPPING.get(res_value, FAN_AUTO)
+            self._attr_fan_mode = fan_mode
+            self.schedule_update_ha_state()
+            return fan_mode
+
+        if res_name == "current_temp":
+            temp = round(float(res_value) / 100.0, 1)
+            self._attr_current_temperature = temp
+            self.schedule_update_ha_state()
+            return temp
+
+        if res_name == "local_temp":
+            temp = round(float(res_value) / 100.0, 1)
+            self._ambient_temperature = temp
+            self.schedule_update_ha_state()
+            return temp
+
+        if res_name == "humidity":
+            humidity = round(float(res_value) / 100.0, 1)
+            self._attr_current_humidity = humidity
+            self._ambient_humidity = humidity
+            self.schedule_update_ha_state()
+            return humidity
+
+        if res_name == "target_temp_heat":
+            temp = round(float(res_value) / 100.0, 1)
+            self._heat_target_temperature = temp
+            self._update_target_temperature()
+            self.schedule_update_ha_state()
+            return temp
+
+        if res_name == "target_temp_cool":
+            temp = round(float(res_value) / 100.0, 1)
+            self._cool_target_temperature = temp
+            self._update_target_temperature()
+            self.schedule_update_ha_state()
+            return temp
+
+        return super().convert_res_to_attr(res_name, res_value)
+
+    async def async_set_hvac_mode(self, hvac_mode):
+        if hvac_mode == HVACMode.OFF:
+            await self.async_set_res_value("power", "0")
+            self._attr_hvac_mode = HVACMode.OFF
+            self.schedule_update_ha_state()
+            return
+
+        mode_value = W400_MODE_ATTR_RES_MAPPING.get(hvac_mode)
+        if mode_value is None:
+            return
+
+        await self.async_set_res_value("mode", mode_value)
+        await self.async_set_res_value("power", "1")
+
+        self._attr_hvac_mode = hvac_mode
+        self._attr_last_hvac_mode = hvac_mode
+        self._update_target_temperature()
+        self.schedule_update_ha_state()
+
+    async def async_turn_on(self):
+        target_mode = self._attr_last_hvac_mode or HVACMode.AUTO
+        if target_mode == HVACMode.OFF:
+            target_mode = HVACMode.AUTO
+        await self.async_set_hvac_mode(target_mode)
+
+    async def async_turn_off(self):
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+    async def async_set_temperature(self, **kwargs):
+        temp = kwargs.get("temperature")
+        if temp is None:
+            return
+
+        hvac_mode = kwargs.get("hvac_mode", self._attr_hvac_mode)
+        if hvac_mode == HVACMode.OFF:
+            hvac_mode = self._attr_last_hvac_mode or HVACMode.COOL
+
+        target_res = "target_temp_heat" if hvac_mode == HVACMode.HEAT else "target_temp_cool"
+
+        await self.async_set_res_value(target_res, str(int(temp * 100)))
+
+        if target_res == "target_temp_heat":
+            self._heat_target_temperature = temp
+        else:
+            self._cool_target_temperature = temp
+
+        self._update_target_temperature()
+        self.schedule_update_ha_state()
+
+    async def async_set_fan_mode(self, fan_mode):
+        res_value = W400_FAN_ATTR_RES_MAPPING.get(fan_mode)
+        if res_value is None:
+            return
+        await self.async_set_res_value("fan_mode", res_value)
+        self._attr_fan_mode = fan_mode
+        self.schedule_update_ha_state()
+
+
+class AiotAirrtcAcn002HydroEntity(AiotEntityBase, ClimateEntity):
+    SCAN_INTERVAL = W400_POLL_INTERVAL
+
+    def __init__(self, hass, device, res_params, channel=None, **kwargs):
+        AiotEntityBase.__init__(self, hass, device, res_params, TYPE, channel, **kwargs)
+        self._attr_temperature_unit = kwargs.get("temperature_unit")
+        self._attr_hvac_modes = kwargs.get("hvac_modes")
+        self._attr_target_temperature_step = kwargs.get("target_temperature_step")
+        self._attr_max_temp = kwargs.get("max_temp")
+        self._attr_min_temp = kwargs.get("min_temp")
+        self._attr_target_temperature_high = kwargs.get("max_temp")
+        self._attr_target_temperature_low = kwargs.get("min_temp")
+
+        self._extra_state_attributes.extend(
+            [
+                "pump_status",
+                "comm_status",
+                "defrosting",
+                "filter_clean_needed",
+                "ambient_temperature",
+                "ambient_humidity",
+            ]
+        )
+
+        self._attr_hvac_mode = HVACMode.OFF
+        self._attr_target_temperature = None
+        self._attr_current_temperature = None
+        self._attr_current_humidity = None
+        self._pump_status = None
+        self._comm_status = None
+        self._defrosting = None
+        self._filter_clean_needed = None
+        self._ambient_temperature = None
+        self._ambient_humidity = None
+        self.pump_status = None
+        self.comm_status = None
+        self.defrosting = None
+        self.filter_clean_needed = None
+        self.ambient_temperature = None
+        self.ambient_humidity = None
+        self._attr_should_poll = True
+
+    def convert_res_to_attr(self, res_name, res_value):
+        if res_name == "floor_heating_power":
+            if res_value == "1":
+                self._attr_hvac_mode = HVACMode.HEAT
+            else:
+                self._attr_hvac_mode = HVACMode.OFF
+            self.schedule_update_ha_state()
+            return res_value == "1"
+
+        if res_name == "target_temp":
+            temp = round(float(res_value) / 100.0, 1)
+            self._attr_target_temperature = temp
+            self.schedule_update_ha_state()
+            return temp
+
+        if res_name == "ambient_temp":
+            temp = round(float(res_value) / 100.0, 1)
+            self._attr_current_temperature = temp
+            self._ambient_temperature = temp
+            self.ambient_temperature = temp
+            self.schedule_update_ha_state()
+            return temp
+
+        if res_name == "ambient_humidity":
+            humidity = round(float(res_value) / 100.0, 1)
+            self._attr_current_humidity = humidity
+            self._ambient_humidity = humidity
+            self.ambient_humidity = humidity
+            self.schedule_update_ha_state()
+            return humidity
+
+        if res_name == "pump_status":
+            status = "on" if res_value == "1" else "off"
+            self._pump_status = status
+            self.pump_status = status
+            self.schedule_update_ha_state()
+            return status
+
+        if res_name == "comm_status":
+            status = "ok" if res_value == "1" else "error"
+            self._comm_status = status
+            self.comm_status = status
+            self.schedule_update_ha_state()
+            return status
+
+        if res_name == "defrosting":
+            status = "yes" if res_value == "1" else "no"
+            self._defrosting = status
+            self.defrosting = status
+            self.schedule_update_ha_state()
+            return status
+
+        if res_name == "filter_clean":
+            status = "needed" if res_value == "1" else "ok"
+            self._filter_clean_needed = status
+            self.filter_clean_needed = status
+            self.schedule_update_ha_state()
+            return status
+
+        return super().convert_res_to_attr(res_name, res_value)
+
+    async def async_set_hvac_mode(self, hvac_mode):
+        if hvac_mode == HVACMode.OFF:
+            await self.async_set_res_value("floor_heating_power", "0")
+            self._attr_hvac_mode = HVACMode.OFF
+        elif hvac_mode == HVACMode.HEAT:
+            await self.async_set_res_value("floor_heating_power", "1")
+            self._attr_hvac_mode = HVACMode.HEAT
+        else:
+            return
+        self.schedule_update_ha_state()
+
+    async def async_turn_on(self):
+        await self.async_set_hvac_mode(HVACMode.HEAT)
+
+    async def async_turn_off(self):
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+    async def async_set_temperature(self, **kwargs):
+        temp = kwargs.get("temperature")
+        if temp is None:
+            return
+        await self.async_set_res_value("target_temp", str(int(temp * 100)))
+        self._attr_target_temperature = temp
+        self.schedule_update_ha_state()
 
 class AiotAirrtcVrfegl01Entity(AiotEntityBase, ClimateEntity):
     def __init__(self, hass, device, res_params, channel=None, **kwargs):

@@ -2569,6 +2569,85 @@ AIOT_DEVICE_MAPPING = [
         ],
     },
     {
+        # Aqara Thermostat W400 (VRF)
+        "lumi.airrtc.acn002": ["Aqara", "Thermostat W400 (VRF)", ""],
+        "params": [
+            {
+                "climate": {
+                    MK_INIT_PARAMS: {
+                        MK_HASS_NAME: "airrtc_acn002",
+                        "supported_features": ClimateEntityFeature.TARGET_TEMPERATURE
+                        | ClimateEntityFeature.FAN_MODE
+                        | ClimateEntityFeature.TURN_ON
+                        | ClimateEntityFeature.TURN_OFF,
+                        "max_temp": float(30),
+                        "min_temp": float(16),
+                        "hvac_modes": [
+                            HVACMode.OFF,
+                            HVACMode.AUTO,
+                            HVACMode.COOL,
+                            HVACMode.HEAT,
+                            HVACMode.DRY,
+                            HVACMode.FAN_ONLY,
+                        ],
+                        "fan_modes": [
+                            FAN_AUTO,
+                            FAN_LOW,
+                            FAN_MEDIUM,
+                            FAN_HIGH,
+                            "gentle",
+                            "ultra_low",
+                            "ultra_high",
+                            "medium_low",
+                            "medium_high",
+                            "stop",
+                        ],
+                        "temperature_unit": UnitOfTemperature.CELSIUS,
+                        "target_temperature_step": float(1),
+                    },
+                    MK_RESOURCES: {
+                        "power": ("4.1.85", "_power_state"),
+                        "mode": ("14.6.85", "_mode_state"),
+                        "fan_mode": ("14.5.85", "_fan_state"),
+                        "current_temp": ("0.1.85", "_current_temp_raw"),
+                        "local_temp": ("0.8.85", "_local_temp_raw"),
+                        "humidity": ("0.2.85", "_humidity_raw"),
+                        "target_temp_heat": ("1.9.85", "_target_heat_raw"),
+                        "target_temp_cool": ("1.8.85", "_target_cool_raw"),
+                    },
+                }
+            },
+            {
+                "climate": {
+                    MK_INIT_PARAMS: {
+                        MK_HASS_NAME: "airrtc_acn002_hydro",
+                        "supported_features": ClimateEntityFeature.TARGET_TEMPERATURE
+                        | ClimateEntityFeature.TURN_ON
+                        | ClimateEntityFeature.TURN_OFF,
+                        "max_temp": float(35),
+                        "min_temp": float(5),
+                        "hvac_modes": [
+                            HVACMode.OFF,
+                            HVACMode.HEAT,
+                        ],
+                        "temperature_unit": UnitOfTemperature.CELSIUS,
+                        "target_temperature_step": float(1),
+                    },
+                    MK_RESOURCES: {
+                        "floor_heating_power": ("4.4.85", "_floor_heating_power"),
+                        "target_temp": ("1.21.85", "_target_temp_raw"),
+                        "ambient_temp": ("0.8.85", "_ambient_temp_raw"),
+                        "ambient_humidity": ("0.9.85", "_ambient_humidity_raw"),
+                        "pump_status": ("3.202.85", "_pump_status"),
+                        "comm_status": ("3.102.85", "_comm_status"),
+                        "defrosting": ("3.203.85", "_defrosting_status"),
+                        "filter_clean": ("3.204.85", "_filter_clean_status"),
+                    },
+                }
+            },
+        ],
+    },
+    {
         # 智能温控器 S3
         "lumi.airrtc.pcacn2": ["Aqara", "Thermostat S3", ""],
         "lumi.airrtc.pcacn2_thermostat": ["Aqara", "Thermostat S3", ""],

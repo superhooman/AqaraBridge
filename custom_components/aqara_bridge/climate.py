@@ -565,6 +565,7 @@ class AiotAirrtcAcn003Entity(AiotAirrtcAcn002Entity):
         super().__init__(hass, device, res_params, channel, **kwargs)
         # Avoid HA init crash when device has not yet reported a mode.
         self._attr_hvac_mode = HVACMode.OFF
+        self._res_subscribed = False
 
     async def async_fetch_res_values(self, *args):
         """ACN003 may return 302 if any resource is closed; query one-by-one."""
@@ -574,6 +575,15 @@ class AiotAirrtcAcn003Entity(AiotAirrtcAcn002Entity):
         else:
             for k in self._res_params.keys():
                 res_ids.append(self.get_res_id_by_name(k))
+
+        if not self._res_subscribed:
+            try:
+                await self._aiot_manager.session.async_subscribe_resources(
+                    self.device.did, res_ids
+                )
+                self._res_subscribed = True
+            except Exception as ex:
+                _LOGGER.debug("ACN003 subscribe failed: %s", ex)
 
         results = []
         for res_id in res_ids:

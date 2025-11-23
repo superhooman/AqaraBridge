@@ -2691,8 +2691,6 @@ AIOT_DEVICE_MAPPING = [
                         "current_temp": ("0.1.85", "_current_temp_raw"),
                         "local_temp": ("0.8.85", "_local_temp_raw"),
                         "humidity": ("0.2.85", "_humidity_raw"),
-                        # ACN003 exposes a single target temperature resource
-                        "target_temp": ("1.21.85", "_target_temp_raw"),
                     },
                 }
             },

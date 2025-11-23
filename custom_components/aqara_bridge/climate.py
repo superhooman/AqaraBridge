@@ -170,7 +170,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     cls_entities = {
         "airrtc_agl001": AiotAirrtcAgl001Entity,
         "airrtc_acn002": AiotAirrtcAcn002Entity,
-        "airrtc_acn003": AiotAirrtcAcn003Entity,
+        "airrtc_acn003": AiotAirrtcAcn002Entity,
         "airrtc_acn002_hydro": AiotAirrtcAcn002HydroEntity,
         "airrtc_pcacn2": AiotAirrtcPcacn2Entity,
         "airrtc_acn02": AiotAirrtcAcn02Entity,
@@ -558,30 +558,6 @@ class AiotAirrtcAcn002Entity(AiotEntityBase, ClimateEntity):
         await self.async_set_res_value("fan_mode", res_value)
         self._attr_fan_mode = fan_mode
         self.schedule_update_ha_state()
-
-
-class AiotAirrtcAcn003Entity(AiotAirrtcAcn002Entity):
-    async def async_fetch_res_values(self, *args):
-        """ACN003 sometimes reports 302 when any resource is closed; query one-by-one."""
-        res_ids = []
-        if len(args) > 0:
-            res_ids.extend(args)
-        else:
-            for k in self._res_params.keys():
-                res_ids.append(self.get_res_id_by_name(k))
-
-        results = []
-        for res_id in res_ids:
-            resp = await self._aiot_manager.session.async_query_resource_value(
-                self.device.did, [res_id]
-            )
-            if isinstance(resp, list):
-                results.extend(resp)
-            else:
-                _LOGGER.debug(
-                    "Resource %s not open for %s: %s", res_id, self.device.did, resp
-                )
-        return results
 
 
 class AiotAirrtcAcn002HydroEntity(AiotEntityBase, ClimateEntity):

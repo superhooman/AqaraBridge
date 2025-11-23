@@ -458,6 +458,9 @@ class AiotAirrtcAcn002Entity(AiotEntityBase, ClimateEntity):
         if res_name == "local_temp":
             temp = round(float(res_value) / 100.0, 1)
             self._ambient_temperature = temp
+            # Some variants only report environment temp here; surface it as current too when missing.
+            if self._attr_current_temperature is None:
+                self._attr_current_temperature = temp
             self.schedule_update_ha_state()
             return temp
 
@@ -479,6 +482,12 @@ class AiotAirrtcAcn002Entity(AiotEntityBase, ClimateEntity):
             temp = round(float(res_value) / 100.0, 1)
             self._cool_target_temperature = temp
             self._update_target_temperature()
+            self.schedule_update_ha_state()
+            return temp
+
+        if res_name == "target_temp":
+            temp = round(float(res_value) / 100.0, 1)
+            self._attr_target_temperature = temp
             self.schedule_update_ha_state()
             return temp
 
@@ -521,14 +530,23 @@ class AiotAirrtcAcn002Entity(AiotEntityBase, ClimateEntity):
         if hvac_mode == HVACMode.OFF:
             hvac_mode = self._attr_last_hvac_mode or HVACMode.COOL
 
-        target_res = "target_temp_heat" if hvac_mode == HVACMode.HEAT else "target_temp_cool"
+        if hvac_mode == HVACMode.HEAT and "target_temp_heat" in self._res_params:
+            target_res = "target_temp_heat"
+        elif hvac_mode == HVACMode.COOL and "target_temp_cool" in self._res_params:
+            target_res = "target_temp_cool"
+        elif "target_temp" in self._res_params:
+            target_res = "target_temp"
+        else:
+            return
 
         await self.async_set_res_value(target_res, str(int(temp * 100)))
 
         if target_res == "target_temp_heat":
             self._heat_target_temperature = temp
-        else:
+        elif target_res == "target_temp_cool":
             self._cool_target_temperature = temp
+        else:
+            self._attr_target_temperature = temp
 
         self._update_target_temperature()
         self.schedule_update_ha_state()

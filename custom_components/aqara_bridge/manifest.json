@@ -3,11 +3,11 @@
     "name": "Aqara Bridge",
     "config_flow": true,
     "iot_class": "cloud_polling",
-    "documentation": "https://github.com/bernard3378/AqaraBridge",
-    "issue_tracker": "https://github.com/bernard3378/AqaraBridge/issues",
+    "documentation": "https://github.com/superhooman/AqaraBridge",
+    "issue_tracker": "https://github.com/superhooman/AqaraBridge/issues",
     "requirements": ["rocketmq"],
     "dependencies": [],
     "after_dependencies": ["homekit"],
-    "codeowners": ["@angeljanne","@meishild","@bernard3378"],
-    "version": "2.1.2"
+    "codeowners": ["@superhooman","@angeljanne","@meishild","@bernard3378"],
+    "version": "2.1.4"
   }

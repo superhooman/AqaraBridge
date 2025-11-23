@@ -1,209 +1,193 @@
 # Aqara Bridge for Home Assistant
 
-基于Aqara开放平台，通过云端api进行设备控制以及订阅
+Built on the Aqara Open Platform to control devices and receive updates through cloud APIs.
 
 [![version](https://img.shields.io/github/manifest-json/v/bernard3378/AqaraBridge?filename=custom_components%2Faqara_bridge%2Fmanifest.json)](https://github.com/bernard3378/AqaraBridge/releases/latest) [![stars](https://img.shields.io/github/stars/bernard3378/AqaraBridge)](https://github.com/bernard3378/AqaraBridge/stargazers) [![issues](https://img.shields.io/github/issues/bernard3378/AqaraBridge)](https://github.com/bernard3378/AqaraBridge/issues) [![hacs](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz)
 
-## 一键添加到HACS
+## Add to HACS with One Click
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bernard3378&repository=AqaraBridge&category=integration)
-## 需要开发者账号支持
 
-申请AqaraIOT开发者：[Aqara IoT Cloud](https://developer.aqara.com/register).
+## Developer Account Required
+Apply for an Aqara IoT developer account: [Aqara IoT Cloud](https://developer.aqara.com/register).
 
-* 提示：如果在安装过程中出现此集成不支持通过UI配置，大概率是因为rocketmq的链接库不存在，当前版本仅自动集成了x86和arm64。
-* [V2.1.1]已加入更多架构支持，如果还出现类似问题请复制日志信息提Issue
-* 当前支持通过hacs商店进行配置，自定义存储库URL: bernard3378/AqaraBridge
+- Tip: If installation says this integration does not support UI configuration, the RocketMQ library is likely missing. The current build bundles x86 and arm64 only.
+- [V2.1.1] adds more architecture support. If the issue persists, copy the log and open an issue.
+- Configuration is supported through HACS. Custom repository URL: `bernard3378/AqaraBridge`.
 
-重点提示：
-* 需要自己申请aqara的开发者账号。
-* 申请流程1：[注册账号](https://developer.aqara.com/register)，申请通过以后需要选择个人认证，输入姓名和身份证号进行开发者认证。
-* 申请流程2：申请通过以后就会有一个DEMO应用，进入项目管理-->详情-->消息推送-->编辑-->选择中国服务、MQ消息推送、消息密钥默认应该只有一个、全订阅-->保存
-* 申请流程3：返回概况，Appid&密钥这个点击展开，找到中国服务，记录appId、appkey（需要点击小眼睛）、keyid，然后将这三个参数填写到插件对应的三个值上。
-* 消息查看：如果需要确认消息可以将这个插件的日志级别改成info可以查看对应消息情况。
+Key reminders:
+1. You must request your own Aqara developer account.
+2. Step 1: [Register](https://developer.aqara.com/register). After approval, choose personal verification and provide your name and ID number for developer verification.
+3. Step 2: After approval you will have a DEMO app. Go to Project Management -> Details -> Message Push -> Edit -> choose China Service, MQ Message Push, keep the single default message key, select All subscriptions -> Save.
+4. Step 3: Go back to Overview. Expand AppId & Key, find China Service, note the `appId`, `appKey` (click the eye), and `keyId`, then fill these three values into the integration.
+5. Message inspection: set the integration log level to `info` if you want to confirm incoming messages.
+
+## Release Notes
+Current version: V2.1.2 (regular update, most stable).
+
+V2.1.4
+- Added support for W400 FCU controller `lumi.airrtc.acn003`.
 
 V2.1.3
-- - Added support for w400 VRF controller lumi1.54ef447e016d
-
-## 版本修订
-当前版本 V2.1.2 常规更新，为当前最稳定版本
+- Added support for W400 VRF controller `lumi.airrtc.acn002`.
 
 V2.1.2
-* 优化初始化向导提示
-* 优化设备初始化流程
-* 优化人体场景传感器FP2状态管理
-* 优化人体存在传感器FP1/FP1E移动事件
-
-- 添加设备：
-- 网关类：
-- - lumi.gateway.acn008 - 网关 M1S（第二代）
-- - lumi.gateway.acn012 - 网关 M3
-
-- 摄像机类：
-- - lumi.camera.gwpagl01 - 智能摄像机G3（网关版） - 支持手势等事件
-
-- 开关/插座类：
-- - lumi.switch.acn048 - 卡农 智能墙壁开关 Z1（单键版）
-- - lumi.switch.acn049 - 卡农 智能墙壁开关 Z1（双键版）
-- - lumi.switch.acn054 - 卡农 智能墙壁开关 Z1（三键版）
-- - lumi.switch.acn055 - 卡农 智能墙壁开关 Z1（四键版）
-- - lumi.switch.acn056 - 卡农 智能墙壁开关 Z1 Pro（单键版）
-- - lumi.switch.acn057 - 卡农 智能墙壁开关 Z1 Pro（双键版）
-- - lumi.switch.acn058 - 卡农 智能墙壁开关 Z1 Pro（三键版）
-- - lumi.switch.acn059 - 卡农 智能墙壁开关 Z1 Pro（四键版）
-- - lumi.switch.acn040 - 智能墙壁开关 E1（零火线三键版）
-- - lumi.switch.acn041 - 智能墙壁开关 J1（单火线单键版）
-- - lumi.switch.acn042 - 智能墙壁开关 J1（单火线双键版）
-- - lumi.switch.acn043 - 智能墙壁开关 J1（单火线三键版）
-- - lumi.switch.acn044 - 智能墙壁开关 J1（零火线单键版）
-- - lumi.switch.acn045 - 智能墙壁开关 J1（零火线双键版）
-- - lumi.switch.acn046 - 智能墙壁开关 J1（零火线三键版）
-- - lumi.switch.acn062 - 智能墙壁开关 Q1（单键版）
-- - lumi.switch.acn063 - 智能墙壁开关 Q1（双键版）
-- - lumi.switch.acn065 - 智能墙壁开关 Q1（四键版）
-- - lumi.switch.acn047 - 双路控制模块 T2
-- - lumi.sensor_switch.v1 - 无线开关
-- - lumi.sensor_switch.v2 - 无线开关
-- - lumi.sensor_switch.aq2 - 无线开关
-
-- 灯控类：（感谢XaoflySho提交的PR）
-- - lumi.dimmer.acn003 - 智能灯带驱动器 T1
-- - lumi.dimmer.acn004 - 智能灯带驱动器 T1（120W）
-- - lumi.dimmer.acn005 - 智能灯带驱动器 T1（240W）
-
-- 空调温控类：
-- - aqara.airrtc.acn02 - 温控伴侣 T1（室内机）
-- - lumi.airrtc.pcacn2 - 智能温控器 S3
-- - lumi.airrtc.pcacn2_thermostat - 智能温控器 S3
-- - lumi.airrtc.agl001 - 智能阀式温控器 E1
-
-- 窗帘类：
-- - lumi.curtain.vagl02 - 智能管状电机 T1
-- - lumi.curtain.acn002 - 智能卷帘伴侣 E1
-
-
+- Improved onboarding prompts.
+- Improved device initialization flow.
+- Improved FP2 human presence scene sensor state handling.
+- Improved FP1/FP1E presence sensor movement events.
+- Added devices:
+  - Gateways:
+    - `lumi.gateway.acn008` - Gateway M1S (2nd gen)
+    - `lumi.gateway.acn012` - Gateway M3
+  - Cameras:
+    - `lumi.camera.gwpagl01` - Smart Camera G3 (gateway edition) with gesture events
+  - Switches/Outlets:
+    - `lumi.switch.acn048` - Kanon Smart Wall Switch Z1 (single button)
+    - `lumi.switch.acn049` - Kanon Smart Wall Switch Z1 (double button)
+    - `lumi.switch.acn054` - Kanon Smart Wall Switch Z1 (triple button)
+    - `lumi.switch.acn055` - Kanon Smart Wall Switch Z1 (quad button)
+    - `lumi.switch.acn056` - Kanon Smart Wall Switch Z1 Pro (single button)
+    - `lumi.switch.acn057` - Kanon Smart Wall Switch Z1 Pro (double button)
+    - `lumi.switch.acn058` - Kanon Smart Wall Switch Z1 Pro (triple button)
+    - `lumi.switch.acn059` - Kanon Smart Wall Switch Z1 Pro (quad button)
+    - `lumi.switch.acn040` - Smart Wall Switch E1 (neutral, triple button)
+    - `lumi.switch.acn041` - Smart Wall Switch J1 (single live wire, single button)
+    - `lumi.switch.acn042` - Smart Wall Switch J1 (single live wire, double button)
+    - `lumi.switch.acn043` - Smart Wall Switch J1 (single live wire, triple button)
+    - `lumi.switch.acn044` - Smart Wall Switch J1 (neutral, single button)
+    - `lumi.switch.acn045` - Smart Wall Switch J1 (neutral, double button)
+    - `lumi.switch.acn046` - Smart Wall Switch J1 (neutral, triple button)
+    - `lumi.switch.acn062` - Smart Wall Switch Q1 (single button)
+    - `lumi.switch.acn063` - Smart Wall Switch Q1 (double button)
+    - `lumi.switch.acn065` - Smart Wall Switch Q1 (quad button)
+    - `lumi.switch.acn047` - Dual-channel control module T2
+    - `lumi.sensor_switch.v1` - Wireless switch
+    - `lumi.sensor_switch.v2` - Wireless switch
+    - `lumi.sensor_switch.aq2` - Wireless switch
+  - Lighting (thanks to PR by XaoflySho):
+    - `lumi.dimmer.acn003` - Smart LED strip driver T1
+    - `lumi.dimmer.acn004` - Smart LED strip driver T1 (120W)
+    - `lumi.dimmer.acn005` - Smart LED strip driver T1 (240W)
+  - HVAC/Thermostats:
+    - `aqara.airrtc.acn02` - Temperature controller companion T1 (indoor unit)
+    - `lumi.airrtc.pcacn2` - Smart thermostat S3
+    - `lumi.airrtc.pcacn2_thermostat` - Smart thermostat S3
+    - `lumi.airrtc.agl001` - Smart valve thermostat E1
+  - Curtains:
+    - `lumi.curtain.vagl02` - Smart tubular motor T1
+    - `lumi.curtain.acn002` - Smart roller shade companion E1
 
 V2.1.1
-* 修复窗帘位置同步不及时问题
-* 修改将被HA弃用的函数
-* 完善arm64架构rocketmq支持
-* 优化初始化时可能创建无法管理的实体的问题
-* 优化冷启动向导相关
-* 优化支持不完善的设备弹出大量警告问题
-* 按钮button改为event类
+- Fixed curtain position sync delays.
+- Updated functions deprecated by Home Assistant.
+- Improved RocketMQ support for arm64.
+- Prevented creation of unmanaged entities during initialization.
+- Improved cold-start wizard.
+- Reduced warnings for partially supported devices.
+- Changed button entities to event class.
+- Added devices:
+  - Clothes dryer:
+    - `lumi.airer.acn001` - Smart clothes dryer H1
+    - `lumi.airer.acn02` - Aqara Smart Clothes Dryer Lite
 
-- 添加设备：
-- 晾衣架类：
-- - lumi.airer.acn001 - 智能晾衣机H1
-- - lumi.airer.acn02 - Aqara智能晾衣机 Lite
-
-V2.1.0 - 修复大部分错误并添加大量设备
-* 重写空调控制器类
-* 修复rocketmq启动时阻塞HA初始化问题
-* 修复了调用某些HA已废弃/将要废弃常量问题
-* 修复light设备类颜色映射错误
-* 修复button设备类UI按钮问题
-* 修复无线场景开关（六键版）型号错误
-* 优化Entities载入流程
-* 优化多通道设备初始化流程
-* 优化设备和Entity自动命名规则
-
-- 添加设备：
-- 网关类：
-- - lumi.controller.a4acn1 - 集悦智慧面板 S1 
-
-- 开关/插座类： 
-- - lumi.switch.n3acn3 - 智能墙壁开关D1（零火线三键版） 
-- - lumi.switch.l3acn3 - 智能墙壁开关D1（单火线三键版） 
-- - lumi.ctrl_86plug.aq1 - 墙壁插座（Zigbee版） 
-- - lumi.relay.c2acn01 - 双路控制器 
-
-- 灯控类： 
-- - lumi.light.cbacn1 - Aqara 智能恒流驱动器 T1-1 
-- - lumi.light.cwopcn01 - 吸顶灯MX960（可调色温） 
-- - lumi.light.acn007 - 轨道格栅灯 H1（6头） 
-- - lumi.light.acn008 - 轨道格栅灯 H1（12头） 
-- - lumi.light.acn009 - 轨道泛光灯 H1（30cm） 
-- - lumi.light.acn010 - 轨道泛光灯 H1（60cm） 
-- - lumi.light.acn011 - 轨道吊线灯 H1 
-- - lumi.light.acn012 - 轨道折叠格栅灯 H1（6头） 
-- - lumi.light.acn013 - 轨道偏光灯 H1（22cm） 
-- - lumi.light.cwjwcn02 - 筒灯（可调色温） 
-- - lumi.light.acn004 - Aqara 双色温驱动器 T1 Pro 
-- - lumi.light.acn006 - 轨道灯 H1 Pro 
-- - lumi.light.acn023 - 射灯 T2（15度） 
-- - lumi.light.acn024 - 射灯 T2（24度） 
-- - lumi.light.acn025 - 射灯 T2（36度） 
-- - lumi.light.acn026 - 筒灯 T2（60度） 
-- - lumi.light.acn128 - 筒射灯 T3 
-- - lumi.light.acn014 - LED灯泡 T1（可调色温） 
-- - lumi.light.acn003 - Aqara 吸顶灯 L1-350 
-- - lumi.light.acn015 - Aqara光艺晴空灯 H1 
-- - lumi.light.acn032 - 幻彩吸顶灯 T1（40W） 
-- - lumi.light.acn132 - 流光溢彩灯带 T1 
-
-- 窗帘类：
-- - lumi.curtain.v1 - 智能窗帘电机 (Zigbee开合帘版)
-- - umi.curtain.acn007 - Aqara智能窗帘电机 T1
-- - lumi.curtain.hagl07 - 智能窗帘电机 C2
-- - lumi.curtain.hagl08 - Aqara智能窗帘电机A1
-- - lumi.curtain.hagl04 - 智能窗帘电机 B1
-- - lumi.curtain.acn015 - Aqara智能窗帘电机 T2
-- - lumi.curtain.aq2 - 智能管状电机
-- - lumi.curtain.hagl04 - 智能窗帘电机 B1
-- - lumi.curtain.acn04 - Aqara智能窗帘电机 C3
-- - lumi.curtain.acn003 - 智能窗帘伴侣E1
-
-- 空调/地暖类：
-- - lumi.aircondition.acn05 - 空调伴侣 P3
-- - lumi.airrtc.vrfegl01 - VRF空调控制器
-- - lumi.acpartner.aq1 - 空调伴侣
-- - lumi.acpartner.v3 - 空调伴侣（升级版）
-- - lumi.ctrl_hvac.es1 - 空调温控器
-- - lumi.airrtc.tcpco2ecn01 - 空调温控器（CO2）
-- - lumi.acpartner.es1 - 空调伴侣
-- - lumi.airrtc.tcpecn01 - 空调温控器
-- - lumi.airrtc.tcpecn02 - 空调温控器 S2
-
-- 传感器类：
-- - lumi.motion.ac02 - 人体传感器 P1
-- - umi.motion.agl02 - 人体传感器 T1
-- - lumi.motion.acn001 - 人体传感器 E1
-- - lumi.motion.agl001 - 人体场景传感器 FP2
-- - lumi.sensor_occupy.agl1 - AI智能存在传感器 FP1E
-- - lumi.sensor_natgas.v1 - 天然气报警器
-- - lumi.sensor_gas.acn02 - Aqara天然气报警器
-- - lumi.airmonitor.acn01 - TVOC空气健康伴侣
-- - lumi.sen_ill.agl01 - 光照传感器 T1
-
+V2.1.0 (fixed many errors and added many devices)
+- Rewrote the air-conditioner controller class.
+- Fixed RocketMQ blocking HA startup.
+- Fixed calls to deprecated or soon-to-be-deprecated HA constants.
+- Fixed color mapping for light devices.
+- Fixed button device UI buttons.
+- Fixed wireless scene switch (6-button) model ID.
+- Optimized entity loading.
+- Optimized multi-channel device initialization.
+- Optimized automatic device and entity naming rules.
+- Added devices:
+  - Gateways:
+    - `lumi.controller.a4acn1` - Jiyue Smart Panel S1
+  - Switches/Outlets:
+    - `lumi.switch.n3acn3` - Smart Wall Switch D1 (neutral, triple button)
+    - `lumi.switch.l3acn3` - Smart Wall Switch D1 (single live wire, triple button)
+    - `lumi.ctrl_86plug.aq1` - Wall outlet (Zigbee)
+    - `lumi.relay.c2acn01` - Dual-channel controller
+  - Lighting:
+    - `lumi.light.cbacn1` - Aqara constant-current driver T1-1
+    - `lumi.light.cwopcn01` - MX960 ceiling light (tunable white)
+    - `lumi.light.acn007` - Track grille light H1 (6-head)
+    - `lumi.light.acn008` - Track grille light H1 (12-head)
+    - `lumi.light.acn009` - Track flood light H1 (30 cm)
+    - `lumi.light.acn010` - Track flood light H1 (60 cm)
+    - `lumi.light.acn011` - Track pendant light H1
+    - `lumi.light.acn012` - Track folding grille light H1 (6-head)
+    - `lumi.light.acn013` - Track polarized light H1 (22 cm)
+    - `lumi.light.cwjwcn02` - Downlight (tunable white)
+    - `lumi.light.acn004` - Aqara dual-color driver T1 Pro
+    - `lumi.light.acn006` - Track light H1 Pro
+    - `lumi.light.acn023` - Spotlight T2 (15°)
+    - `lumi.light.acn024` - Spotlight T2 (24°)
+    - `lumi.light.acn025` - Spotlight T2 (36°)
+    - `lumi.light.acn026` - Downlight T2 (60°)
+    - `lumi.light.acn128` - Down/spot light T3
+    - `lumi.light.acn014` - LED bulb T1 (tunable white)
+    - `lumi.light.acn003` - Aqara ceiling light L1-350
+    - `lumi.light.acn015` - Aqara Guangyi Clear Sky light H1
+    - `lumi.light.acn032` - Colorful ceiling light T1 (40W)
+    - `lumi.light.acn132` - Flow light strip T1
+  - Curtains:
+    - `lumi.curtain.v1` - Smart curtain motor (Zigbee open/close version)
+    - `umi.curtain.acn007` - Aqara smart curtain motor T1
+    - `lumi.curtain.hagl07` - Smart curtain motor C2
+    - `lumi.curtain.hagl08` - Aqara smart curtain motor A1
+    - `lumi.curtain.hagl04` - Smart curtain motor B1
+    - `lumi.curtain.acn015` - Aqara smart curtain motor T2
+    - `lumi.curtain.aq2` - Smart tubular motor
+    - `lumi.curtain.hagl04` - Smart curtain motor B1
+    - `lumi.curtain.acn04` - Aqara smart curtain motor C3
+    - `lumi.curtain.acn003` - Smart curtain companion E1
+  - Air conditioning / floor heating:
+    - `lumi.aircondition.acn05` - Air conditioner companion P3
+    - `lumi.airrtc.vrfegl01` - VRF air conditioner controller
+    - `lumi.acpartner.aq1` - Air conditioner companion
+    - `lumi.acpartner.v3` - Air conditioner companion (upgraded)
+    - `lumi.ctrl_hvac.es1` - HVAC thermostat
+    - `lumi.airrtc.tcpco2ecn01` - Thermostat (CO2)
+    - `lumi.acpartner.es1` - Air conditioner companion
+    - `lumi.airrtc.tcpecn01` - Thermostat
+    - `lumi.airrtc.tcpecn02` - Thermostat S2
+  - Sensors:
+    - `lumi.motion.ac02` - Motion sensor P1
+    - `umi.motion.agl02` - Motion sensor T1
+    - `lumi.motion.acn001` - Motion sensor E1
+    - `lumi.motion.agl001` - FP2 human presence scene sensor
+    - `lumi.sensor_occupy.agl1` - FP1E AI presence sensor
+    - `lumi.sensor_natgas.v1` - Natural gas alarm
+    - `lumi.sensor_gas.acn02` - Aqara natural gas alarm
+    - `lumi.airmonitor.acn01` - TVOC air quality companion
+    - `lumi.sen_ill.agl01` - Illuminance sensor T1
 
 V2.0.3
-* 修复开发者配置问题，可以使用自己开发者信息。
-
+- Fixed developer configuration so you can use your own developer credentials.
 
 V2.0.2
-* 修复错误保存问题，增加启动依赖，需要在homekit启动正常以后。
-* 修复flow的option操作错误，可以重新通过手机号刷新失效token，并修复部分错误提示。
-* hass图标已经通过，当前可以正常显示组件图标，以及设备厂商图标。
-* 修复其他常规错误。
+- Fixed save errors and added startup dependency (start after HomeKit is up).
+- Fixed flow option errors so tokens can be refreshed by phone number and improved error messages.
+- hass icons are approved; component and manufacturer icons now display correctly.
+- Fixed other common issues.
 
 V2.0.1
-* 整体合并到master，原有的配置方式需要使用dev分支，该分支不继续维护。
-* 修改flow，将多个网关合并到账号，拆分开发者认证信息允许自行配置自己的开发者AK等。
-* 修复大部分组件获取状态异常，以及历史状态修改。
-* 感谢[银狼](https://bbs.hassbian.com/?62352)新增部分组件配置：支持无线旋钮H1，H1 12头磁吸格栅灯，无线按钮（升级版）。同时墙壁开关拆分为两部分，其中零火的加入了电量监测，led驱动模块加了电力监测。
+- Merged everything into master; the old configuration method required the `dev` branch, which is no longer maintained.
+- Updated the flow: multiple gateways are merged into an account; developer auth info is separated so you can configure your own developer AK, etc.
+- Fixed most device state retrieval issues and history state updates.
+- Thanks to [Silver Wolf](https://bbs.hassbian.com/?62352) for added device configs: support for Wireless Knob H1, H1 12-head magnetic grille light, and upgraded wireless button. Wall switches are split into two parts; neutral models add power monitoring, and LED driver modules add power monitoring.
 
 V1.0.1
-* 修复了大部分组件的问题，增加了无线按键。当前的按键都同时事件订阅刷新时间整体速度还不错，不是轮训机制了。
-* 增加房间位置获取。
-* 增加按键类开关对应按键名称获取。
-* 增加arm64的rocketmq动态链接库，除了X86和arm64其他暂时没处理。
-* 增加各类的历史数据获取刷新了最后的trigger_time或者last_update_time。
-* 增加button类型，将无线开关从传感器上拆分。
-* 配置了大部分常见的网关、无线开关、单火/零火开关、温湿度传感器、智能插座、人体传感器等。
-* 增加了部分错误提示，至少不会在配置没任何错误了。
+- Fixed most device issues and added wireless buttons. Buttons now use event subscriptions instead of polling for faster refresh.
+- Added room location retrieval.
+- Added button name retrieval for button-type switches.
+- Added RocketMQ dynamic library for arm64 (only x86 and arm64 handled for now).
+- Added history data retrieval to refresh `trigger_time` or `last_update_time`.
+- Added `button` entity type by separating wireless switches from sensors.
+- Configured most common gateways, wireless switches, single-live/neutral switches, temperature/humidity sensors, smart outlets, motion sensors, etc.
+- Added more error prompts so configuration errors are less likely.
 
 V1.0.0
 
-还有我只支持了大部分我有的设备和类似的组件，如果发现有不支持的懂python的修改：
-[custom_components/aqara_bridge/core/aiot_mapping.py](https://github.com/meishild/AqaraBridge/blob/master/custom_components/aqara_bridge/core/aiot_mapping.py)
-
+I only support most devices I own and similar components. If you find unsupported devices and can code Python, please update: [custom_components/aqara_bridge/core/aiot_mapping.py](https://github.com/meishild/AqaraBridge/blob/master/custom_components/aqara_bridge/core/aiot_mapping.py)

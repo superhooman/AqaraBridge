@@ -170,6 +170,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     cls_entities = {
         "airrtc_agl001": AiotAirrtcAgl001Entity,
         "airrtc_acn002": AiotAirrtcAcn002Entity,
+        "airrtc_acn003": AiotAirrtcAcn002Entity,
         "airrtc_acn002_hydro": AiotAirrtcAcn002HydroEntity,
         "airrtc_pcacn2": AiotAirrtcPcacn2Entity,
         "airrtc_acn02": AiotAirrtcAcn02Entity,
